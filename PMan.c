@@ -6,7 +6,7 @@
 #include <readline/history.h>
 
 #include "./processList.h" // linked list and functions
-#include "./commandService.h" // command parsing and handling
+#include "./commandUtility.h" // command parsing and handling
 
 char** tokenize_input(char** commandInput, char* input) {
     char *tok;
@@ -15,8 +15,8 @@ char** tokenize_input(char** commandInput, char* input) {
 	int inputIndex = 0;
 	while(tok !=NULL) {
 		commandLength = strlen(tok);
-		commandInput[inputIndex] = malloc(sizeof(char)*(commandLength + 1));
-		commandInput[inputIndex++] = tok;
+		commandInput[inputIndex] = calloc((commandLength + 1), sizeof(char));
+		strcpy(commandInput[inputIndex++],tok);
 		tok = strtok(NULL, " ");
 	}
 	commandInput[inputIndex] = 0;
@@ -26,7 +26,6 @@ char** tokenize_input(char** commandInput, char* input) {
 int main(int argc, char *argv[]) {
 
     char *commands[] = {"bg"};
-	char **commandInput = malloc(sizeof(char*) * 100);
 	char **programArgs;
 	
 	struct process* processes = create_list();
@@ -35,10 +34,18 @@ int main(int argc, char *argv[]) {
     char *prompt = "PMan > ";
 
     while(1) {
+        char **commandInput = calloc(100, sizeof(char*));
 		remove_terminated_processes(processes);
         input = readline(prompt);    
 		tokenize_input(commandInput, input);
 		process_input(processes, commandInput);
+        
+        int i;
+        for (i = 0; commandInput[i] != 0; ++i) {
+            free(commandInput[i]);
+        }
+        free(commandInput);
+        free(input);
 	}
     return 0;
 }
